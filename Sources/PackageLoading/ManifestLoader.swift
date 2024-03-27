@@ -433,6 +433,18 @@ public final class ManifestLoader: ManifestLoaderProtocol {
                     ))
                 }
 
+                var dependencies = parsedManifest.dependencies
+                #if !canImport(Darwin)
+                if !dependencies.contains(where: { $0.identity == .plain("swift-foundation") }) {
+                    dependencies.append(.remoteSourceControl(identity: .plain("swift-corelibs-foundation"),
+                                                             nameForTargetDependencyResolutionOnly: "swift-corelibs-foundation",
+                                                             url: "https://github.com/parkera/swift-corelibs-foundation.git",
+                                                             requirement: .branch("package"),
+                                                             productFilter: .everything,
+                                                             isImplicit: true))
+                }
+                #endif
+
                 let manifest = Manifest(
                     displayName: parsedManifest.name,
                     path: manifestPath,
@@ -448,7 +460,7 @@ public final class ManifestLoader: ManifestLoaderProtocol {
                     cLanguageStandard: parsedManifest.cLanguageStandard,
                     cxxLanguageStandard: parsedManifest.cxxLanguageStandard,
                     swiftLanguageVersions: parsedManifest.swiftLanguageVersions,
-                    dependencies: parsedManifest.dependencies,
+                    dependencies: dependencies,
                     products: products,
                     targets: targets
                 )

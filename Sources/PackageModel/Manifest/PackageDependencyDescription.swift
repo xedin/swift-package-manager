@@ -37,6 +37,8 @@ public enum PackageDependency: Equatable, Hashable, Sendable {
         public let requirement: Requirement
         public let productFilter: ProductFilter
 
+        package let implicit: Bool
+
         public enum Requirement: Equatable, Hashable, Sendable {
             case exact(Version)
             case range(Range<Version>)
@@ -60,6 +62,13 @@ public enum PackageDependency: Equatable, Hashable, Sendable {
             case exact(Version)
             case range(Range<Version>)
         }
+    }
+
+    package var implicit: Bool {
+        if case .sourceControl(let settings) = self {
+            return settings.implicit
+        }
+        return false
     }
 
     public var identity: PackageIdentity {
@@ -126,11 +135,14 @@ public enum PackageDependency: Equatable, Hashable, Sendable {
             )
         case .sourceControl(let settings):
             return .sourceControl(
-                identity: settings.identity,
-                nameForTargetDependencyResolutionOnly: settings.nameForTargetDependencyResolutionOnly,
-                location: settings.location,
-                requirement: settings.requirement,
-                productFilter: productFilter
+                .init(
+                    identity: settings.identity,
+                    nameForTargetDependencyResolutionOnly: settings.nameForTargetDependencyResolutionOnly,
+                    location: settings.location,
+                    requirement: settings.requirement,
+                    productFilter: productFilter,
+                    implicit: settings.implicit
+                )
             )
         case .registry(let settings):
             return .registry(
@@ -170,19 +182,37 @@ public enum PackageDependency: Equatable, Hashable, Sendable {
             productFilter: productFilter
         )
     }
-    
+
     public static func remoteSourceControl(identity: PackageIdentity,
                                            nameForTargetDependencyResolutionOnly: String?,
                                            url: SourceControlURL,
                                            requirement: SourceControl.Requirement,
                                            productFilter: ProductFilter
     ) -> Self {
+        remoteSourceControl(identity: identity,
+                            nameForTargetDependencyResolutionOnly: nameForTargetDependencyResolutionOnly,
+                            url: url,
+                            requirement: requirement,
+                            productFilter: productFilter,
+                            isImplicit: false)
+    }
+
+    package static func remoteSourceControl(identity: PackageIdentity,
+                                            nameForTargetDependencyResolutionOnly: String?,
+                                            url: SourceControlURL,
+                                            requirement: SourceControl.Requirement,
+                                            productFilter: ProductFilter,
+                                            isImplicit: Bool
+    ) -> Self {
         .sourceControl(
-            identity: identity,
-            nameForTargetDependencyResolutionOnly: nameForTargetDependencyResolutionOnly,
-            location: .remote(url),
-            requirement: requirement,
-            productFilter: productFilter
+            .init(
+                identity: identity,
+                nameForTargetDependencyResolutionOnly: nameForTargetDependencyResolutionOnly,
+                location: .remote(url),
+                requirement: requirement,
+                productFilter: productFilter,
+                implicit: isImplicit
+            )
         )
     }
 
@@ -198,7 +228,8 @@ public enum PackageDependency: Equatable, Hashable, Sendable {
                 nameForTargetDependencyResolutionOnly: nameForTargetDependencyResolutionOnly,
                 location: location,
                 requirement: requirement,
-                productFilter: productFilter
+                productFilter: productFilter,
+                implicit: false
             )
         )
     }

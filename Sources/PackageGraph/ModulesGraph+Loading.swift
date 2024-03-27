@@ -398,6 +398,21 @@ private func createResolvedPackages(
                     return nil
                 }
             }
+
+            // If root package has any implicit dependencies all of its targets have to depend
+            // on their library products.
+            package.manifest.dependencies.filter {
+                $0.implicit == true
+            }.forEach {
+                if let dependency = packagesByIdentity[$0.identity] {
+                    targetBuilder.dependencies.append(contentsOf: dependency.products.filter {
+                        $0.product.type.isLibrary
+                    }.map {
+                        .product($0, conditions: [])
+                    })
+                }
+            }
+
             targetBuilder.defaultLocalization = packageBuilder.defaultLocalization
             targetBuilder.supportedPlatforms = packageBuilder.supportedPlatforms
         }
