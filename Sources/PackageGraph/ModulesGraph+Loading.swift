@@ -383,6 +383,12 @@ private func createResolvedPackages(
         }
         packageBuilder.targets = targetBuilders
 
+        let implicitDependencies = package.manifest.dependencies.filter {
+            $0.implicit == true
+        }.map {
+            packagesByIdentity[$0.identity]
+        }.compactMap { $0 }
+
         // Establish dependencies between the targets. A target can only depend on another target present in the same package.
         let targetMap = targetBuilders.spm_createDictionary({ ($0.target, $0) })
         for targetBuilder in targetBuilders {
@@ -401,14 +407,13 @@ private func createResolvedPackages(
 
             // If root package has any implicit dependencies all of its targets have to depend
             // on their library products.
-            package.manifest.dependencies.filter {
-                $0.implicit == true
-            }.forEach {
-                if let dependency = packagesByIdentity[$0.identity] {
+            if targetBuilder.target is SwiftTarget {
+                implicitDependencies.forEach { dependency in
                     targetBuilder.dependencies.append(contentsOf: dependency.products.filter {
                         $0.product.type.isLibrary
                     }.map {
-                        .product($0, conditions: [])
+                        print("!!! Adding dependency => \($0.product) to \(targetBuilder.target)")
+                        return .product($0, conditions: [])
                     })
                 }
             }
