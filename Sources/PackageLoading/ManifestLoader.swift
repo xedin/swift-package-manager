@@ -435,13 +435,26 @@ public final class ManifestLoader: ManifestLoaderProtocol {
 
                 var dependencies = parsedManifest.dependencies
                 #if !canImport(Darwin)
-                let corelibsFoundationId = PackageIdentity.plain("swift-corelibs-foundation")
-                dependencies.map { print($0.identity) }
-                if !packageIdentity.description.starts(with: "swift-") &&
+                let excludes: [String] = [
+                    "swift-corelibs-foundation",
+                    "swift-corelibs-xctest",
+                    "swift-foundation",
+                    "swift-foundation-icu",
+                    "swift-syntax",
+                    "swift-collections"
+                ]
+
+                if !excludes.contains(where: { .plain($0) == packageIdentity }),
                    !dependencies.contains(where: { $0.identity == .plain("swift-foundation") }) {
-                    dependencies.append(.remoteSourceControl(identity: corelibsFoundationId,
+                    dependencies.append(.remoteSourceControl(identity: .plain("swift-corelibs-foundation"),
                                                              nameForTargetDependencyResolutionOnly: "swift-corelibs-foundation",
-                                                             url: "https://github.com/parkera/swift-corelibs-foundation.git",
+                                                             url: "https://github.com/apple/swift-corelibs-foundation",
+                                                             requirement: .branch("package"),
+                                                             productFilter: .everything,
+                                                             isImplicit: true))
+                    dependencies.append(.remoteSourceControl(identity: .plain("swift-corelibs-xctest"),
+                                                             nameForTargetDependencyResolutionOnly: "swift-corelibs-xctest",
+                                                             url: "https://github.com/apple/swift-corelibs-xctest",
                                                              requirement: .branch("package"),
                                                              productFilter: .everything,
                                                              isImplicit: true))
