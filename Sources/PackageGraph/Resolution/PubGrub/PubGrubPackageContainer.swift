@@ -167,6 +167,7 @@ internal final class PubGrubPackageContainer {
         var constraints: [PackageContainerConstraint] = []
         for dep in unprocessedDependencies {
             // Version-based packages are not allowed to contain unversioned dependencies.
+            /*
             guard case .versionSet = dep.requirement else {
                 let cause: Incompatibility.Cause = .versionBasedDependencyContainsUnversionedDependency(
                     versionedDependency: self.package,
@@ -174,6 +175,7 @@ internal final class PubGrubPackageContainer {
                 )
                 return [try Incompatibility(Term(node, .exact(version)), root: root, cause: cause)]
             }
+            */
 
             // Skip if this package is overridden.
             if overriddenPackages.keys.contains(dep.package) {
