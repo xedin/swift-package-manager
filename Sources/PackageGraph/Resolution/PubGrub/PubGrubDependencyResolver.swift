@@ -497,9 +497,7 @@ public struct PubGrubDependencyResolver {
 
             // initiate prefetch of known packages that will be used to make the decision on the next step
             self.provider.prefetch(
-                containers: state.solution.undecided.map(\.node.package).filter {
-                    $0.matchingPrebuiltLibrary(in: self.availableLibraries) == nil
-                }
+                containers: state.solution.undecided.map(\.node.package)
             )
 
             // If decision making determines that no more decisions are to be
