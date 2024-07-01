@@ -25,9 +25,13 @@ final class PubGrubPackageContainer {
     /// Reference to the pins map.
     private let pins: PinsStore.Pins
 
-    init(underlying: PackageContainer, pins: PinsStore.Pins) {
+    /// A version of the package that is provided in a pre-built form.
+    private let library: ProvidedLibrary?
+
+    init(underlying: PackageContainer, pins: PinsStore.Pins, library: ProvidedLibrary?) {
         self.underlying = underlying
         self.pins = pins
+        self.library = library
     }
 
     var package: PackageReference {
@@ -78,6 +82,14 @@ final class PubGrubPackageContainer {
     func getBestAvailableVersion(for term: Term) throws -> Version? {
         assert(term.isPositive, "Expected term to be positive")
         var versionSet = term.requirement
+
+        // If prebuilt libraries are available, let's attempt their versions first before going for
+        // the latest viable version in the package.
+        //
+        // Since the conflict resolution learns from incorrect terms this wouldn't be re-attempted.
+        if let library, term.requirement.contains(library.version) {
+            return library.version
+        }
 
         // Restrict the selection to the pinned version if is allowed by the current requirements.
         if let pinnedVersion = self.pinnedVersion {

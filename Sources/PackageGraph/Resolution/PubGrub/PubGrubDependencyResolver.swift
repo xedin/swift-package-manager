@@ -140,6 +140,7 @@ public struct PubGrubDependencyResolver {
             provider: self.packageContainerProvider,
             skipUpdate: self.skipDependenciesUpdates,
             pins: self.pins,
+            availableLibraries: availableLibraries,
             observabilityScope: observabilityScope
         )
         self.delegate = delegate
@@ -727,32 +728,6 @@ public struct PubGrubDependencyResolver {
         let undecided = state.solution.undecided
         guard !undecided.isEmpty else {
             return completion(.success(nil))
-        }
-
-        // If prebuilt libraries are available, let's attempt their versions first before going for
-        // the latest viable version in the package. This way we archive multiple goals - prioritize
-        // prebuilt libraries if they satisfy all requirements, avoid counting and building package
-        // manifests and avoid (re-)building packages.
-        //
-        // Since the conflict resolution learns from incorrect terms this wouldn't be re-attempted.
-        if !self.availableLibraries.isEmpty {
-            let start = DispatchTime.now()
-            for pkgTerm in undecided {
-                let package = pkgTerm.node.package
-                guard let library = package.matchingPrebuiltLibrary(in: self.availableLibraries) else {
-                    continue
-                }
-
-                if pkgTerm.requirement.contains(library.version) {
-                    self.delegate?.didResolve(
-                        term: pkgTerm,
-                        version: library.version,
-                        duration: start.distance(to: .now())
-                    )
-                    state.decide(pkgTerm.node, at: library.version)
-                    return completion(.success(pkgTerm.node))
-                }
-            }
         }
 
         // Prefer packages with least number of versions that fit the current requirements so we

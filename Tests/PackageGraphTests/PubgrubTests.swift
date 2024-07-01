@@ -1798,7 +1798,8 @@ final class PubgrubTests: XCTestCase {
                     )],
                 ]
             ),
-            pins: PinsStore.Pins()
+            pins: PinsStore.Pins(),
+            library: nil
         )
         let rootLocation = AbsolutePath("/Root")
         let otherLocation = AbsolutePath("/Other")

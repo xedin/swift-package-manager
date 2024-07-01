@@ -27,6 +27,9 @@ final class ContainerProvider {
     /// Reference to the pins store.
     private let pins: PinsStore.Pins
 
+    /// All of the currently available pre-built libraries.
+    private let availableLibraries: [ProvidedLibrary]
+
     /// Observability scope to emit diagnostics with
     private let observabilityScope: ObservabilityScope
 
@@ -40,11 +43,13 @@ final class ContainerProvider {
         provider underlying: PackageContainerProvider,
         skipUpdate: Bool,
         pins: PinsStore.Pins,
+        availableLibraries: [ProvidedLibrary],
         observabilityScope: ObservabilityScope
     ) {
         self.underlying = underlying
         self.skipUpdate = skipUpdate
         self.pins = pins
+        self.availableLibraries = availableLibraries
         self.observabilityScope = observabilityScope
     }
 
@@ -96,7 +101,11 @@ final class ContainerProvider {
                 on: .sharedConcurrent
             ) { result in
                 let result = result.tryMap { container -> PubGrubPackageContainer in
-                    let pubGrubContainer = PubGrubPackageContainer(underlying: container, pins: self.pins)
+                    let pubGrubContainer = PubGrubPackageContainer(
+                        underlying: container,
+                        pins: self.pins,
+                        library: package.matchingPrebuiltLibrary(in: self.availableLibraries)
+                    )
 
                     // only cache positive results
                     self.containersCache[package] = pubGrubContainer
@@ -133,7 +142,8 @@ final class ContainerProvider {
                     if case .success(let container) = result {
                         self.containersCache[identifier] = PubGrubPackageContainer(
                             underlying: container,
-                            pins: self.pins
+                            pins: self.pins,
+                            library: identifier.matchingPrebuiltLibrary(in: self.availableLibraries)
                         )
                     }
                 }
