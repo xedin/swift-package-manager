@@ -693,6 +693,7 @@ extension Workspace {
                         package: packageRef,
                         requirement: state.requirement,
                         productFilter: state.products,
+                        providedLibrary: state.library,
                         observabilityScope: observabilityScope
                     )
                 case .updated(let state):
@@ -700,6 +701,7 @@ extension Workspace {
                         package: packageRef,
                         requirement: state.requirement,
                         productFilter: state.products,
+                        providedLibrary: state.library,
                         observabilityScope: observabilityScope
                     )
                 case .removed, .unchanged, .usesLibrary:
@@ -735,6 +737,7 @@ extension Workspace {
         package: PackageReference,
         requirement: PackageStateChange.Requirement,
         productFilter: ProductFilter,
+        providedLibrary: ProvidedLibrary?,
         observabilityScope: ObservabilityScope
     ) throws -> AbsolutePath {
         switch requirement {
@@ -764,6 +767,7 @@ extension Workspace {
                 return try self.checkoutRepository(
                     package: package,
                     at: .version(version, revision: revision),
+                    providedLibrary: providedLibrary,
                     observabilityScope: observabilityScope
                 )
             } else if let _ = container as? RegistryPackageContainer {
@@ -945,9 +949,16 @@ extension Workspace {
         public struct State: Equatable {
             public let requirement: Requirement
             public let products: ProductFilter
-            public init(requirement: Requirement, products: ProductFilter) {
+            public let library: ProvidedLibrary?
+
+            public init(
+                requirement: Requirement,
+                products: ProductFilter,
+                library: ProvidedLibrary? = nil
+            ) {
                 self.requirement = requirement
                 self.products = products
+                self.library = library
             }
         }
 
@@ -1112,11 +1123,16 @@ extension Workspace {
                      .custom(version, _):
                     library.flatMap { .usesLibrary($0) } ?? .unchanged
                 case .edited, .fileSystem, .sourceControlCheckout, .registryDownload, .providedLibrary, .custom:
-                    .updated(.init(requirement: .version(version), products: binding.products))
-                case nil:
-                    library.flatMap { .usesLibrary($0) } ?? .added(.init(
+                    .updated(.init(
                         requirement: .version(version),
-                        products: binding.products
+                        products: binding.products,
+                        library: library
+                    ))
+                case nil:
+                    .added(.init(
+                        requirement: .version(version),
+                        products: binding.products,
+                        library: library
                     ))
                 }
                 packageStateChanges[binding.package.identity] = (binding.package, stateChange)

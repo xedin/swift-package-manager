@@ -18,6 +18,7 @@ import struct Dispatch.DispatchTime
 import enum PackageGraph.PackageRequirement
 import class PackageGraph.PinsStore
 import struct PackageModel.PackageReference
+import struct PackageModel.ProvidedLibrary
 import struct SourceControl.Revision
 import struct TSCUtility.Version
 
@@ -37,6 +38,7 @@ extension Workspace {
     func checkoutRepository(
         package: PackageReference,
         at checkoutState: CheckoutState,
+        providedLibrary: ProvidedLibrary? = nil,
         observabilityScope: ObservabilityScope
     ) throws -> AbsolutePath {
         let repository = try package.makeRepositorySpecifier()
@@ -70,13 +72,20 @@ extension Workspace {
             debug: "adding '\(package.identity)' (\(package.locationString)) to managed dependencies",
             metadata: package.diagnosticsMetadata
         )
-        try self.state.dependencies.add(
-            .sourceControlCheckout(
-                packageRef: package,
-                state: checkoutState,
-                subpath: checkoutPath.relative(to: self.location.repositoriesCheckoutsDirectory)
+
+        if let providedLibrary {
+            try self.state.dependencies.add(
+                .providedLibrary(packageRef: package, library: providedLibrary)
             )
-        )
+        } else {
+            try self.state.dependencies.add(
+                .sourceControlCheckout(
+                    packageRef: package,
+                    state: checkoutState,
+                    subpath: checkoutPath.relative(to: self.location.repositoriesCheckoutsDirectory)
+                )
+            )
+        }
         try self.state.save()
 
         // Inform the delegate that we're done.
