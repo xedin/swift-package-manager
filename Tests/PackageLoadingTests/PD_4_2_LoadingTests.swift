@@ -638,6 +638,7 @@ final class PackageDescription4_2LoadingTests: PackageDescriptionLoadingTests {
                 identityResolver: identityResolver,
                 dependencyMapper: dependencyMapper,
                 fileSystem: localFileSystem,
+                providedLibraryPath: nil,
                 observabilityScope: observability.topScope,
                 delegateQueue: .sharedConcurrent,
                 callbackQueue: .sharedConcurrent
@@ -658,6 +659,7 @@ final class PackageDescription4_2LoadingTests: PackageDescriptionLoadingTests {
                     identityResolver: identityResolver,
                     dependencyMapper: dependencyMapper,
                     fileSystem: localFileSystem,
+                    providedLibraryPath: nil,
                     observabilityScope: observability.topScope,
                     delegateQueue: .sharedConcurrent,
                     callbackQueue: .sharedConcurrent
@@ -722,6 +724,7 @@ final class PackageDescription4_2LoadingTests: PackageDescriptionLoadingTests {
                     identityResolver: identityResolver,
                     dependencyMapper: dependencyMapper,
                     fileSystem: localFileSystem,
+                    providedLibraryPath: nil,
                     observabilityScope: observability.topScope,
                     delegateQueue: .sharedConcurrent,
                     callbackQueue: .sharedConcurrent

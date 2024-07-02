@@ -159,6 +159,7 @@ public class RegistryPackageContainer: PackageContainer {
                             identityResolver: self.identityResolver,
                             dependencyMapper: self.dependencyMapper,
                             fileSystem: result.fileSystem,
+                            providedLibraryPath: nil,
                             observabilityScope: self.observabilityScope,
                             delegateQueue: .sharedConcurrent,
                             callbackQueue: .sharedConcurrent,

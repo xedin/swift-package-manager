@@ -60,6 +60,7 @@ public final class MockManifestLoader: ManifestLoaderProtocol {
         identityResolver: IdentityResolver,
         dependencyMapper: DependencyMapper,
         fileSystem: FileSystem,
+        providedLibraryPath: AbsolutePath?,
         observabilityScope: ObservabilityScope,
         delegateQueue: DispatchQueue,
         callbackQueue: DispatchQueue,
@@ -119,6 +120,7 @@ extension ManifestLoader {
             identityResolver: identityResolver,
             dependencyMapper: dependencyMapper ?? DefaultDependencyMapper(identityResolver: identityResolver),
             fileSystem: fileSystem,
+            providedLibraryPath: nil,
             observabilityScope: observabilityScope,
             delegateQueue: .sharedConcurrent,
             callbackQueue: .sharedConcurrent
@@ -166,6 +168,7 @@ extension ManifestLoader {
             identityResolver: identityResolver,
             dependencyMapper: dependencyMapper ?? DefaultDependencyMapper(identityResolver: identityResolver),
             fileSystem: fileSystem,
+            providedLibraryPath: nil,
             observabilityScope: observabilityScope,
             delegateQueue: .sharedConcurrent,
             callbackQueue: .sharedConcurrent

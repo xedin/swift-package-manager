@@ -268,6 +268,7 @@ final class RegistryPackageContainerTests: XCTestCase {
                           identityResolver: IdentityResolver,
                           dependencyMapper: DependencyMapper,
                           fileSystem: FileSystem,
+                          providedLibraryPath: AbsolutePath?,
                           observabilityScope: ObservabilityScope,
                           delegateQueue: DispatchQueue,
                           callbackQueue: DispatchQueue,
@@ -276,6 +277,7 @@ final class RegistryPackageContainerTests: XCTestCase {
                         Manifest.createManifest(
                             displayName: packageIdentity.description,
                             path: manifestPath,
+                            providedLibraryAt: providedLibraryPath,
                             packageKind: packageKind,
                             packageLocation: packageLocation,
                             platforms: [],

@@ -89,6 +89,7 @@ public struct FileSystemPackageContainer: PackageContainer {
                     identityResolver: self.identityResolver,
                     dependencyMapper: self.dependencyMapper,
                     fileSystem: self.fileSystem,
+                    providedLibraryPath: nil,
                     observabilityScope: self.observabilityScope,
                     delegateQueue: .sharedConcurrent,
                     callbackQueue: .sharedConcurrent,

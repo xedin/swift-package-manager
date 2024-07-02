@@ -206,6 +206,7 @@ extension Manifest {
     public static func createManifest(
         displayName: String,
         path: AbsolutePath = .root,
+        providedLibraryAt: AbsolutePath? = nil,
         packageKind: PackageReference.Kind,
         packageLocation: String? = nil,
         defaultLocalization: String? = nil,
@@ -225,6 +226,7 @@ extension Manifest {
         return Manifest(
             displayName: displayName,
             path: path.basename == Manifest.filename ? path : path.appending(component: Manifest.filename),
+            providedLibraryAt: providedLibraryAt,
             packageKind: packageKind,
             packageLocation: packageLocation ?? path.pathString,
             defaultLocalization: defaultLocalization,
@@ -248,6 +250,7 @@ extension Manifest {
         Manifest(
             displayName: self.displayName,
             path: self.path,
+            providedLibraryAt: self.providedLibraryPath,
             packageKind: self.packageKind,
             packageLocation: location,
             defaultLocalization: self.defaultLocalization,

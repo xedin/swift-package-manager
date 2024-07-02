@@ -379,8 +379,8 @@ extension Workspace {
             return path ?? self.location.editSubdirectory(for: dependency)
         case .fileSystem(let path):
             return path
-        case .providedLibrary(let path, _):
-            return path
+        case .providedLibrary(_, _):
+            return self.location.repositoriesCheckoutSubdirectory(for: dependency)
         case .custom(_, let path):
             return path
         }
@@ -639,6 +639,7 @@ extension Workspace {
         // The kind and version, if known.
         let packageKind: PackageReference.Kind
         let packageVersion: Version?
+        let providedLibraryPath: AbsolutePath?
         switch managedDependency.state {
         case .sourceControlCheckout(let checkoutState):
             packageKind = managedDependency.packageRef.kind
@@ -648,23 +649,23 @@ extension Workspace {
             default:
                 packageVersion = .none
             }
+            providedLibraryPath = nil
         case .registryDownload(let downloadedVersion):
             packageKind = managedDependency.packageRef.kind
             packageVersion = downloadedVersion
+            providedLibraryPath = nil
         case .providedLibrary(let path, let version):
-            let manifest: Manifest? = try? .forProvidedLibrary(
-                fileSystem: fileSystem,
-                package: managedDependency.packageRef,
-                libraryPath: path,
-                version: version
-            )
-            return completion(manifest)
+            packageKind = managedDependency.packageRef.kind
+            packageVersion = version
+            providedLibraryPath = path
         case .custom(let availableVersion, _):
             packageKind = managedDependency.packageRef.kind
             packageVersion = availableVersion
+            providedLibraryPath = nil
         case .edited, .fileSystem:
             packageKind = .fileSystem(packagePath)
             packageVersion = .none
+            providedLibraryPath = nil
         }
 
         let fileSystem: FileSystem?
@@ -691,6 +692,7 @@ extension Workspace {
             packageLocation: managedDependency.packageRef.locationString,
             packageVersion: packageVersion,
             fileSystem: fileSystem,
+            providedLibraryPath: providedLibraryPath,
             observabilityScope: observabilityScope
         ) { result in
             // error is added to diagnostics in the function above
@@ -708,6 +710,7 @@ extension Workspace {
         packageLocation: String,
         packageVersion: Version? = nil,
         fileSystem: FileSystem? = nil,
+        providedLibraryPath: AbsolutePath? = nil,
         observabilityScope: ObservabilityScope,
         completion: @escaping (Result<Manifest, Error>) -> Void
     ) {
@@ -739,6 +742,7 @@ extension Workspace {
             identityResolver: self.identityResolver,
             dependencyMapper: self.dependencyMapper,
             fileSystem: fileSystem,
+            providedLibraryPath: providedLibraryPath,
             observabilityScope: manifestLoadingScope,
             delegateQueue: .sharedConcurrent,
             callbackQueue: .sharedConcurrent

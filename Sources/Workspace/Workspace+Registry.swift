@@ -82,6 +82,7 @@ extension Workspace {
             identityResolver: any IdentityResolver,
             dependencyMapper: any DependencyMapper,
             fileSystem: any FileSystem,
+            providedLibraryPath: AbsolutePath?,
             observabilityScope: ObservabilityScope,
             delegateQueue: DispatchQueue,
             callbackQueue: DispatchQueue,
@@ -97,6 +98,7 @@ extension Workspace {
                 identityResolver: identityResolver,
                 dependencyMapper: dependencyMapper,
                 fileSystem: fileSystem,
+                providedLibraryPath: providedLibraryPath,
                 observabilityScope: observabilityScope,
                 delegateQueue: delegateQueue,
                 callbackQueue: callbackQueue
@@ -298,6 +300,7 @@ extension Workspace {
             let modifiedManifest = Manifest(
                 displayName: manifest.displayName,
                 path: manifest.path,
+                providedLibraryAt: manifest.providedLibraryPath,
                 packageKind: manifest.packageKind,
                 packageLocation: manifest.packageLocation,
                 defaultLocalization: manifest.defaultLocalization,

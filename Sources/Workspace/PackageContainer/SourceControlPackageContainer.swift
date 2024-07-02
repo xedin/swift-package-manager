@@ -414,6 +414,7 @@ internal final class SourceControlPackageContainer: PackageContainer, CustomStri
                 identityResolver: self.identityResolver,
                 dependencyMapper: self.dependencyMapper,
                 fileSystem: fileSystem,
+                providedLibraryPath: nil,
                 observabilityScope: self.observabilityScope,
                 delegateQueue: .sharedConcurrent,
                 callbackQueue: .sharedConcurrent,

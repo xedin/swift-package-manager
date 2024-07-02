@@ -62,6 +62,7 @@ final class ManifestSourceGenerationTests: XCTestCase {
                 identityResolver: identityResolver,
                 dependencyMapper: dependencyMapper,
                 fileSystem: fs,
+                providedLibraryPath: nil,
                 observabilityScope: observability.topScope,
                 delegateQueue: .sharedConcurrent,
                 callbackQueue: .sharedConcurrent
@@ -91,6 +92,7 @@ final class ManifestSourceGenerationTests: XCTestCase {
                 identityResolver: identityResolver,
                 dependencyMapper: dependencyMapper,
                 fileSystem: fs,
+                providedLibraryPath: nil,
                 observabilityScope: observability.topScope,
                 delegateQueue: .sharedConcurrent,
                 callbackQueue: .sharedConcurrent

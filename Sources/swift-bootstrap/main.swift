@@ -446,6 +446,7 @@ struct SwiftBootstrapBuildTool: ParsableCommand {
                     identityResolver: identityResolver,
                     dependencyMapper: dependencyMapper,
                     fileSystem: fileSystem,
+                    providedLibraryPath: nil,
                     observabilityScope: observabilityScope,
                     delegateQueue: .sharedConcurrent,
                     callbackQueue: .sharedConcurrent,
