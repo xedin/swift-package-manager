@@ -138,6 +138,8 @@ private struct LocalPackageContainer: PackageContainer {
             return try self.manifest.dependencyConstraints(productFilter: productFilter)
         case .registryDownload(version: version):
             return try self.manifest.dependencyConstraints(productFilter: productFilter)
+        case .providedLibrary(_, version: version):
+            return try self.manifest.dependencyConstraints(productFilter: productFilter)
         default:
             throw InternalError(
                 "expected version based state, but state was \(String(describing: self.dependency?.state))"
