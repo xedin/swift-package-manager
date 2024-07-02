@@ -231,7 +231,7 @@ public class Module {
     public let others: [AbsolutePath]
 
     /// The build settings assignments of this module.
-    public let buildSettings: BuildSettings.AssignmentTable
+    public private(set) var buildSettings: BuildSettings.AssignmentTable
 
     @_spi(SwiftPMInternal)
     public let buildSettingsDescription: [TargetBuildSettingDescription.Setting]
@@ -282,6 +282,16 @@ public class Module {
         }
 
         return false
+    }
+
+    package func withAdditionalSettings(_ settings: BuildSettings.AssignmentTable) -> Module {
+        let module = self
+        for (scope, assignments) in settings.assignments {
+            for assignment in assignments {
+                module.buildSettings.add(assignment, for: scope)
+            }
+        }
+        return module
     }
 }
 

@@ -633,6 +633,9 @@ private func createResolvedPackages(
             // Directly add all the system module dependencies.
             moduleBuilder.dependencies += implicitSystemLibraryDeps.map { .module($0, conditions: []) }
 
+            // Dependencies that can use a prebuilt library instead of building from source.
+            var dependenciesWithLibraries: [(library: AbsolutePath, product: String)] = []
+
             // Establish product dependencies.
             for case .product(let productRef, let conditions) in moduleBuilder.module.dependencies {
                 if let traitCondition = conditions.compactMap({ $0.traitCondition }).first {
@@ -704,7 +707,68 @@ private func createResolvedPackages(
                     }
                 }
 
+                // Attempt to use prebuilt libraries if this is a macro target from non-root package
+                // and the dependency is unconditional.
+                if moduleBuilder.module.type == .macro,
+                   conditions.isEmpty,
+                   rootManifests[package.identity] == nil
+                {
+                    let dependencyPackage = product.packageBuilder.package
+                    if let libraryPath = dependencyPackage.manifest.providedLibraryPath {
+                        dependenciesWithLibraries.append((libraryPath, productRef.name))
+                        continue
+                    }
+                }
+
                 moduleBuilder.dependencies.append(.product(product, conditions: conditions))
+            }
+
+            if !dependenciesWithLibraries.isEmpty {
+                var buildSettings = BuildSettings.AssignmentTable()
+
+                var uniqueLibraries = Set<AbsolutePath>()
+                var uniqueProducts = Set<String>()
+
+                for (libraryPath, productName) in dependenciesWithLibraries {
+                    // All of the unique library paths to include as `-I` and `-L`.
+                    if uniqueLibraries.insert(libraryPath).inserted {
+                        buildSettings.add(
+                            .init(values: ["-I", libraryPath.pathString]),
+                            for: .OTHER_SWIFT_FLAGS
+                        )
+
+                        var linkerSettings = [
+                            "-L", libraryPath.pathString
+                        ]
+
+                        #if canImport(Darwin)
+                        linkerSettings.append(contentsOf: [
+                            "-Xlinker", "-rpath",
+                            "-Xlinker", libraryPath.pathString
+                        ])
+                        #elseif os(Linux)
+                        linkerSettings.append(contents: [
+                            "-Xlinker", "-rpath=\(libraryPath.pathString)"
+                        ])
+                        #endif
+
+                        buildSettings.add(
+                            .init(values: linkerSettings),
+                            for: .OTHER_LDFLAGS
+                        )
+                    }
+
+                    // All of the unique product names from the prebuilt library dependencies
+                    // to include as `-l`.
+                    if uniqueProducts.insert(productName).inserted {
+                        buildSettings.add(
+                            .init(values: ["-l\(productName)"]),
+                            for: .OTHER_LDFLAGS
+                        )
+                    }
+                }
+
+                moduleBuilder.updateBuildSettings(with: buildSettings)
             }
         }
     }
@@ -1104,7 +1168,7 @@ private final class ResolvedModuleBuilder: ResolvedBuilder<ResolvedModule> {
     let packageIdentity: PackageIdentity
 
     /// The module reference.
-    let module: Module
+    fileprivate(set) var module: Module
 
     /// The module dependencies of this module.
     var dependencies: [Dependency] = []
@@ -1162,6 +1226,10 @@ private final class ResolvedModuleBuilder: ResolvedBuilder<ResolvedModule> {
             supportedPlatforms: self.supportedPlatforms,
             platformVersionProvider: self.platformVersionProvider
         )
+    }
+
+    fileprivate func updateBuildSettings(with settings: BuildSettings.AssignmentTable) {
+        self.module = self.module.withAdditionalSettings(settings)
     }
 }
 
