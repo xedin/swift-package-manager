@@ -30,7 +30,7 @@ import var TSCBasic.stdoutStream
 struct MigrateOptions: ParsableArguments {
     @Option(
         name: .customLong("targets"),
-        help: "The targets to migrate to specified set of features."
+        help: "The targets to migrate to specified set of features"
     )
     var _targets: String?
 
